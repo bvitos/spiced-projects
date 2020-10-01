@@ -1,0 +1,1 @@
+temporary directory for creating animation frames
