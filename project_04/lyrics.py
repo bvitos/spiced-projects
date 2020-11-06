@@ -154,7 +154,7 @@ if args.artistlinks != None:
         lyrics.append(artistlyrics)    
     df = pd.read_csv('lyrics.csv')         # read in the  lyrics database (scraped prior to running the program)
     df = df.append(dframe)
-    df.to_csv('lyrics2.csv', index=False)
+    df.to_csv('lyrics.csv', index=False)
     print('Lyrics dataframe (lyrics.csv):')
     print(df)
     
