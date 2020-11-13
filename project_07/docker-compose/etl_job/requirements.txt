@@ -1,0 +1,6 @@
+SQLAlchemy
+psycopg2-binary
+pymongo==3.7.1
+datetime
+vaderSentiment
+pandas

@@ -1,0 +1,61 @@
+﻿version: "3"
+services: #or containers
+  tweet_collector:
+    build: tweet_collector/
+    depends_on:
+      - pg_container
+      - mongodb
+    links:
+      - mongodb
+    environment:
+      TZ: "Europe/Berlin"
+
+  etl:
+    build: etl_job/
+    depends_on:
+      - pg_container
+      - mongodb
+    env_file:
+      - .vars.env
+    environment:
+      TZ: "Europe/Berlin"
+
+  slackbot:
+    build: slackbot/
+    depends_on:
+      - pg_container
+    env_file:
+      - .vars.env
+    environment:
+      TZ: "Europe/Berlin"
+    volumes:
+      - ./config:/config
+
+
+  pg_container:
+    image: postgres:13.0 #<-- name of an image on Dockerhub directly
+    ports:
+      - 5555:5432
+#    environment:
+#      - POSTGRES_USER=postgres
+#      - POSTGRES_PASSWORD=1234
+#      - POSTGRES_DB:'postgres'
+      # Port Outside container : Inside container
+    env_file:
+      - .vars.env
+    environment:
+      TZ: "Europe/Berlin"
+    
+  mongodb:
+    image: mongo
+    ports:
+      - 27017:27017
+    environment:
+      TZ: "Europe/Berlin"
+
+#    volumes:
+#      - ~/Spiced/git-repos/stochastic-sage-student-code/project_07/docker-#compose/mongo/db/copy:/data/db
+
+
+  # slackbot:
+  # etl
