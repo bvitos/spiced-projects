@@ -5,8 +5,8 @@ services: #or containers
     depends_on:
       - pg_container
       - mongodb
-    links:
-      - mongodb
+    env_file:
+      - .vars.env
     environment:
       TZ: "Europe/Berlin"
 

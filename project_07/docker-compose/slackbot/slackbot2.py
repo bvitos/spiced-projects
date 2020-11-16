@@ -15,8 +15,7 @@ pguser = os.environ.get('POSTGRES_USER')               # postgres credentials: u
 pgpassword = os.environ.get('POSTGRES_PASSWORD')
 pg = create_engine(f'postgres://{pguser}:{pgpassword}@pg_container:5432/postgres') # pg connect
 
-webhook_url = "https://hooks.slack.com/services/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"
-
+webhook_url = os.environ.get('SLACK_WEBHOOK')           # Slack credential from env file
 
 now = datetime.now()
 olddatetime = now.strftime('%Y-%m-%d %H:%M')
@@ -27,13 +26,11 @@ botswitch = configdata.iloc[0,0]
 while True:
     now = datetime.now()
     minutenow = now.minute
-    configdata=pd.read_csv('../config/config.csv')
+    configdata=pd.read_csv('../config/config.csv')      # on-the-fly Slackbot switch using config file
     botrunning = configdata.iloc[0,0]
     if (botswitch != botrunning):
-    	logging.critical(f'\n\nSLACKBOT SWITCHED TO STATE: {botrunning}')
-    if (botswitch != botrunning):
-    	botswitch = botrunning
-    	logging.critical(f'\n\nSLACKBOT SWITCHED TO STATE: {botrunning}')
+        botswitch = botrunning
+        logging.critical(f'\n\nSLACKBOT SWITCHED TO STATE: {botrunning}')
     if (minutenow != oldminute) and (botrunning == 0):
         oldminute = minutenow
         olddatetime = now.strftime('%Y-%m-%d %H:%M')            	

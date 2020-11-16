@@ -1,25 +1,19 @@
-import config
+#import config
 from tweepy import OAuthHandler, Stream
 from tweepy.streaming import StreamListener
 import json
 import logging
 import time
 import pymongo
+import os
 
 def authenticate():
-    """Function for handling Twitter Authentication. Please note
-       that this script assumes you have a file called config.py
-       which stores the 4 required authentication tokens:
-
-       1. API_KEY
-       2. API_SECRET
-       3. ACCESS_TOKEN
-       4. ACCESS_TOKEN_SECRET
-
-    See course material for instructions on getting your own Twitter credentials.
+    """Function for handling Twitter Authentication. Credentials imported from env file
     """
-    auth = OAuthHandler(config.API_KEY, config.API_SECRET)
-    auth.set_access_token(config.ACCESS_TOKEN, config.ACCESS_TOKEN_SECRET)
+
+    auth = OAuthHandler(os.environ.get('API_KEY'), os.environ.get('API_SECRET'))
+    auth.set_access_token(os.environ.get('ACCESS_TOKEN'), os.environ.get('ACCESS_TOKEN_SECRET'))
+
 
     return auth
 
