@@ -1,6 +1,9 @@
-#! python3
-# etl.py - ETL Docker script: Reads tweets from mongodb, performs sentiment analysis 
-# and stores results (incl. timestamp of analysis) in postgres
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+ETL Docker script: Reads tweets from MongoDB, performs VADER sentiment analysis 
+and stores results (incl. current timestamp) in Postgres
+"""
 
 import pymongo
 from sqlalchemy import create_engine
@@ -11,31 +14,31 @@ import pandas as pd
 import logging
 import os
 
-time.sleep(5)  # safety check
+if __name__ == '__main__':
+    pguser = os.environ.get('POSTGRES_USER')               # postgres credentials imported from .env file
+    pgpassword = os.environ.get('POSTGRES_PASSWORD')
+    pg = create_engine(f'postgres://{pguser}:{pgpassword}@pg_container:5432/postgres') # pg connect
+    client = pymongo.MongoClient('mongodb')      # mongo connect
+    db = client.tweets
+    tweetsdb = db.tmp
+    tweetsdb.drop()
+    tweetsdb = db.tmp                           # create empty "tmp" collection to be populated by get_tweets.py
+                                                # note: tweets are stored in the "backup" mongo collections
 
-pguser = os.environ.get('POSTGRES_USER')               # postgres credentials: using environment vars stored in hidden file
-pgpassword = os.environ.get('POSTGRES_PASSWORD')
-pg = create_engine(f'postgres://{pguser}:{pgpassword}@pg_container:5432/postgres') # pg connect
-
-client = pymongo.MongoClient('mongodb')      # mongo connect
-db = client.test
-tweetsdb = db.tweets
-
-oldid = ''
-while True:                                      # keeps on checking for arrival of tweets with new ID
-    latesttweet = list(tweetsdb.find().limit(1).sort([( '$natural', -1 )] ))
-    newid = str(latesttweet[0]['_id'])            # read tweet ID
-    if newid != oldid:
-        newtweet = latesttweet[0]['tweet']        # read tweet text
-        if newtweet[0:3] == 'RT ':                              # remove RT prefix if present
-            newtweet = newtweet[3:]
-        oldid = newid
-        now = datetime.now()
-        s = SentimentIntensityAnalyzer()
-        sentscore = s.polarity_scores(newtweet)['compound']                # get sentiment score
-        logging.critical(f'\n\nFORWARDING TO POSTGRES: {newtweet}\n')
-        logging.critical(f'WITH SENTIMENT SCORE: {sentscore}\n\n')
-        data = [[newid,newtweet,now.strftime('%Y-%m-%d %H:%M:%S'),sentscore]]   # database row to be stored in postgres
-        tweets_new = pd.DataFrame(data, columns=['id','tweet','timestamp','sentimentscore'])
-        tweets_new.set_index('id', inplace=True)
-        tweets_new.to_sql('tweets', pg, if_exists='append', method='multi', chunksize=1000)  # exporting to postgres
+    while True:                                      # keep on checking for arrival of new tweets in "tmp"
+        latesttweet = list(tweetsdb.find().limit(1).sort([( '$natural', -1 )] ))
+        if len(latesttweet) > 0:                    # new tweet found:
+            tweetsdb.remove({"_id":latesttweet[0]['_id']})          # remove already processed tweet from db
+            newid = str(latesttweet[0]['_id'])                      # read tweet ID
+            newtweet = latesttweet[0]['tweet']                      # read tweet text
+            if newtweet[0:3] == 'RT ':                              # remove RT prefix if present
+                newtweet = newtweet[3:]
+            now = datetime.now().replace(microsecond=0)
+            s = SentimentIntensityAnalyzer()
+            sentscore = s.polarity_scores(newtweet)['compound']                # get sentiment score
+            logging.critical(f'\n\nFORWARDING TO POSTGRES: {newtweet}\n')
+            logging.critical(f'WITH SENTIMENT SCORE: {sentscore}\n\n')
+            data = [[newid,newtweet,now,sentscore]]   # create database row to be stored in postgres
+            tweets_new = pd.DataFrame(data, columns=['id','tweet','timestamp','sentimentscore'])
+            tweets_new.set_index('id', inplace=True)
+            tweets_new.to_sql('tweets', pg, if_exists='append', method='multi', chunksize=1000)  # export to postgres

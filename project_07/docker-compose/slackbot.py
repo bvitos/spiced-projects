@@ -9,18 +9,17 @@ import logging
 import os
 import requests
 
-time.sleep(10)  # safety check
+time.sleep(5)  # safety check
 
-pguser = os.environ.get('POSTGRES_USER')               # postgres credentials: using environment vars stored in hidden file
+pguser = os.environ.get('POSTGRES_USER')               # Import Postgres credentials form env file
 pgpassword = os.environ.get('POSTGRES_PASSWORD')
 pg = create_engine(f'postgres://{pguser}:{pgpassword}@pg_container:5432/postgres') # pg connect
 
-webhook_url = os.environ.get('SLACK_WEBHOOK')           # Slack credential from env file
+webhook_url = os.environ.get('SLACK_WEBHOOK')           # Import Slack webhook from env file
 
 now = datetime.now()
 olddatetime = now.strftime('%Y-%m-%d %H:%M')
 oldminute = 60
-#oldminute = minutenow
 configdata=pd.read_csv('../config/config.csv')
 botswitch = configdata.iloc[0,0]
 while True:
@@ -35,7 +34,8 @@ while True:
         oldminute = minutenow
         olddatetime = now.strftime('%Y-%m-%d %H:%M')            	
     if (minutenow != oldminute) and (botrunning == 1):                       # check tweets in postgres in one-minute intervals
-
+#        out = pd.read_sql_query("SELECT * FROM tweets WHERE timestamp LIKE (?);", pg, params = [olddatetime])   # first, dump the last 100 tweets into a dataframe 
+                                                                                             # so we don't have to search through the whole db all the time)                
 
         result = pd.read_sql_query("SELECT * FROM tweets ORDER BY id DESC LIMIT 100;", pg)   # first, dump the last 100 tweets into a dataframe 
                                                                                              # so we don't have to search through the whole db all the time)                
@@ -51,9 +51,9 @@ while True:
         logging.critical(f'Worst news in the last minute: {worstnews} with a score of {worstscore}')
 
         data = {'text': f'Best news in the last minute: {bestnews} with a score of {bestscore}'}
-        requests.post(url=webhook_url, json = data)
+#        requests.post(url=webhook_url, json = data)
         data = {'text': f'Worst news in the last minute: {worstnews} with a score of {worstscore}'}
-        requests.post(url=webhook_url, json = data)
+#        requests.post(url=webhook_url, json = data)
 
         oldminute = minutenow
         olddatetime = now.strftime('%Y-%m-%d %H:%M')

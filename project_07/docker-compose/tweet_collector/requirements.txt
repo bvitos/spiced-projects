@@ -1,5 +1,5 @@
 tweepy
 pymongo
-faker
 SQLAlchemy
 psycopg2-binary
+pandas

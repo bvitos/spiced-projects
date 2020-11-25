@@ -9,6 +9,8 @@ services: #or containers
       - .vars.env
     environment:
       TZ: "Europe/Berlin"
+    volumes:
+      - ./config:/config
 
   etl:
     build: etl_job/
