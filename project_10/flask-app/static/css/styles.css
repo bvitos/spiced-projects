@@ -1,0 +1,44 @@
+/* * {
+  background-color: teal;
+} */
+
+/* In CSS, we can target specific elements! */
+
+h1 {
+  color: #0078ff;
+}
+
+p.enter-movies {
+  color: #0078ff;
+  font-style: italic;
+  font-weight: bold;
+}
+
+p.warning {
+  color: #FF00AF;
+  font-weight: bold;
+}
+
+p.button-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+ul li{
+ font-size: 16px;
+}
+
+.homepage-container {
+  background-color: #00d0a6;
+  color: #004e72;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn {
+  margin-top: 10px;
+}
