@@ -12,7 +12,9 @@ import numpy as np
 from sklearn.decomposition import NMF
 from fuzzywuzzy import process
 from scipy.spatial.distance import cdist
-
+import time
+import logging
+    
 def generate_matrix(ratingsread):
     ratingsread.drop(columns=['timestamp'],inplace=True)
     ratings = pd.pivot_table(ratingsread, values = 'rating', index='userId',columns='movieId')
@@ -75,7 +77,7 @@ def find_movie_index(inputtitle, year):
 def movie_recommender(usrtitles, usryears):      
     '''recommends movies with features closest to the individual movies provided, 
     plus the one closest to the mean of their features, based on cosine similarity'''
-    Q_work = Q_movies
+    Q_work = Q_movies.copy(deep=True)
     recommendations = []
     indexes = []
     for i in range(len(usrtitles)):              # find and store the indexes of the usr movies
@@ -106,14 +108,14 @@ def movie_recommender(usrtitles, usryears):
     return recommended_movies
 
 
-def read_matrix():
+def read_matrix():                      # initialising data, this will be run in a separate thread
     global movies
     movies = pd.read_csv('./movies-wrangled.csv',sep=',')
     global Q_movies
     Q_movies = pd.read_csv('./q.csv',sep=',')
 
-
-# To create matrix use the following code:
-#P,Q,R = generate_matrix(pd.read_csv('./ratings.csv',sep=','))
-#Q.to_csv('./q.csv')
-#recmovies=movierecommender(['Heat', 'Nixon', 'Interiors'],[1995, 1995, 1978])
+if __name__ == "__main__":                 # When module is run directly it generates the Q matri and runs a test recommendation
+    P,Q,R = generate_matrix(pd.read_csv('./ratings.csv',sep=','))
+    Q.to_csv('./q.csv')
+    read_matrix()
+    recmovies=movie_recommender(['Heat', 'Nixon', 'Interiors'],[1995, 1995, 1978])

@@ -13,6 +13,7 @@ from recommender_tools2 import find_movie_title
 from threading import Thread
 import logging
 import numpy as np
+import time
 
 app = Flask(__name__)
 
@@ -23,8 +24,9 @@ def index():
 
 @app.route('/recommend', methods=['GET','POST'])
 def recommend():
-    read_matrix()
     if request.method == 'GET':
+        while thread.isAlive():
+            time.sleep(1)
         usrinput = dict(request.args)            
         logging.critical(usrinput)
         moviedata = []                                   # first find the matching movies in the movie db:
@@ -48,8 +50,7 @@ def recommend():
 
     
 if __name__ == '__main__':
-#    app.run()
-#    readmatrix()
-#    thread = Thread(target = read_matrix)
-#    thread.start()
+    global thread
+    thread = Thread(target = read_matrix)
+    thread.start()
     app.run(debug=True, port=5000)
