@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun Dec  6 15:58:36 2020
-
+This script fixes the missing or incorrenct entries in the Movielens-100k dataset,
+then it creates a dataset with separate year and alternative title entries
 @author: boti
 """
 
@@ -37,5 +38,6 @@ for i in range(len(movies)):    # Separate alternative title from title (where a
         movies.loc[i,'alt_title'] = movies.loc[i,'alt_title'][movies.loc[i,'alt_title'].find("(")+1:movies.loc[i,'alt_title'].find(")")]
         if movies.loc[i,'alt_title'][0:6] == "a.k.a.":
             movies.loc[i,'alt_title']=movies.loc[i,'alt_title'][6:len(movies.loc[i,'alt_title'])+1]
+    else: movies.loc[i,'alt_title'] = ""
 
 movies.to_csv('movies-wrangled.csv')
